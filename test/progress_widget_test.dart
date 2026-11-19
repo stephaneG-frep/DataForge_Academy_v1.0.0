@@ -177,7 +177,19 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(MainShell), findsOneWidget);
 
-    for (final label in ['Apprendre', 'Playground', 'Défis', 'Projets', 'Profil', 'Accueil']) {
+    // Every track shortcut on the home screen opens its track.
+    for (final title in ['SQL', 'SQLite', 'PostgreSQL', 'MySQL', 'MongoDB', 'Conception']) {
+      final chip = find.widgetWithText(ActionChip, title);
+      await tester.ensureVisible(chip);
+      await tester.pumpAndSettle();
+      await tester.tap(chip);
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull, reason: title);
+      await tester.pageBack();
+      await tester.pumpAndSettle();
+    }
+
+    for (final label in ['Cours', 'Console', 'Défis', 'Projets', 'Profil', 'Accueil']) {
       await tester.tap(find.descendant(
           of: find.byType(NavigationBar), matching: find.text(label)));
       await tester.runAsync(

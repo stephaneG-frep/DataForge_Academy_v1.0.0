@@ -61,6 +61,8 @@ class PracticeData {
         RowDef([3, 'Ressources humaines', 'Paris']),
         RowDef([4, 'Finance', 'Marseille']),
         RowDef([5, 'Marketing', 'Paris']),
+        // No employee and no city yet: used by the LEFT JOIN / NULL lessons.
+        RowDef([6, 'Juridique', null]),
       ]),
       TableDef('employes', [
         ColumnDef('id', 'INTEGER PRIMARY KEY'),
@@ -69,19 +71,20 @@ class PracticeData {
         ColumnDef('departement_id', 'INTEGER'),
         ColumnDef('salaire', 'REAL'),
         ColumnDef('embauche', 'TEXT'),
+        ColumnDef('manager_id', 'INTEGER'), // self-reference (NULL = no manager)
       ], [
-        RowDef([1, 'Martin', 'Sophie', 2, 42000, '2018-03-12']),
-        RowDef([2, 'Bernard', 'Paul', 1, 35000, '2019-07-01']),
-        RowDef([3, 'Dubois', 'Marie', 3, 38000, '2016-11-20']),
-        RowDef([4, 'Petit', 'Jean', 4, 50000, '2015-02-10']),
-        RowDef([5, 'Durand', 'Luc', 2, 45000, '2020-09-15']),
-        RowDef([6, 'Lefebvre', 'Emma', 1, 33000, '2021-05-03']),
-        RowDef([7, 'Moreau', 'Hugo', 2, 52000, '2014-01-08']),
-        RowDef([8, 'Simon', 'Léa', 5, 31000, '2022-04-18']),
-        RowDef([9, 'Laurent', 'Tom', 4, 47000, '2017-08-25']),
-        RowDef([10, 'Garcia', 'Chloé', 3, 36000, '2023-02-14']),
-        RowDef([11, 'Roux', 'Nathan', 1, 29000, '2023-10-01']),
-        RowDef([12, 'Fournier', 'Manon', 5, 34000, '2019-06-30']),
+        RowDef([1, 'Martin', 'Sophie', 2, 42000, '2018-03-12', 7]),
+        RowDef([2, 'Bernard', 'Paul', 1, 35000, '2019-07-01', null]),
+        RowDef([3, 'Dubois', 'Marie', 3, 38000, '2016-11-20', null]),
+        RowDef([4, 'Petit', 'Jean', 4, 50000, '2015-02-10', null]),
+        RowDef([5, 'Durand', 'Luc', 2, 45000, '2020-09-15', 7]),
+        RowDef([6, 'Lefebvre', 'Emma', 1, 33000, '2021-05-03', 2]),
+        RowDef([7, 'Moreau', 'Hugo', 2, 52000, '2014-01-08', null]),
+        RowDef([8, 'Simon', 'Léa', 5, 31000, '2022-04-18', 12]),
+        RowDef([9, 'Laurent', 'Tom', 4, 47000, '2017-08-25', 4]),
+        RowDef([10, 'Garcia', 'Chloé', 3, 36000, '2023-02-14', 3]),
+        RowDef([11, 'Roux', 'Nathan', 1, 29000, '2023-10-01', 2]),
+        RowDef([12, 'Fournier', 'Manon', 5, 34000, '2019-06-30', null]),
       ]),
     ],
   );
@@ -132,6 +135,7 @@ class PracticeData {
         RowDef([3, 'Chloé Bernard', 'chloe@example.com', 'Marseille']),
         RowDef([4, 'David Petit', 'david@example.com', 'Paris']),
         RowDef([5, 'Emma Durand', 'emma@example.com', 'Toulouse']),
+        RowDef([6, 'Farid Haddad', null, 'Lille']), // no email: NULL lesson
       ]),
     ],
   );

@@ -192,22 +192,29 @@ class TrackLessonsScreen extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: Row(
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.levelColors[lvl].withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  'Niveau ${lvl + 1} · ${level.name}',
-                  style: TextStyle(
-                      color: AppColors.levelColors[lvl],
-                      fontWeight: FontWeight.w700,
-                      fontSize: 12),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.levelColors[lvl].withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'Niveau ${lvl + 1} · ${level.name}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                          color: AppColors.levelColors[lvl],
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12),
+                    ),
+                  ),
                 ),
               ),
-              const Spacer(),
+              const SizedBox(width: 8),
               Text('$done/${lessons.length}',
                   style: const TextStyle(
                       fontSize: 12, color: AppColors.terminalGreen)),

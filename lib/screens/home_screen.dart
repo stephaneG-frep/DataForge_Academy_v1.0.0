@@ -159,32 +159,25 @@ class HomeScreen extends StatelessWidget {
 
   Widget _quickTracks(BuildContext context) {
     final repo = ContentRepository.instance;
-    final chips = <String, IconData>{
-      'SQL': Icons.data_object,
-      'SQLite': Icons.storage,
-      'PostgreSQL': Icons.account_tree,
-      'MySQL': Icons.dns,
-      'MongoDB': Icons.hub,
-      'Conception': Icons.account_tree,
-    };
+    // Shortcuts to the main tracks: icon and label come from the track itself,
+    // so they always match the "Cours" tab.
+    const ids = ['sql', 'sqlite', 'postgres', 'mysql', 'mongodb', 'design'];
+    const shortTitles = {'design': 'Conception'};
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: chips.entries.map((e) {
-        return ActionChip(
-          avatar: Icon(e.value, size: 16, color: AppColors.terminalGreen),
-          label: Text(e.key),
-          onPressed: () {
-            final track = repo.trackById(e.key.toLowerCase() == 'conception'
-                ? 'design'
-                : e.key.toLowerCase());
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => TrackLessonsScreen(track: track!)));
-          },
-        );
-      }).toList(),
+      children: [
+        for (final id in ids)
+          if (repo.trackById(id) case final track?)
+            ActionChip(
+              avatar: Icon(track.icon, size: 16, color: AppColors.terminalGreen),
+              label: Text(shortTitles[id] ?? track.title),
+              onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => TrackLessonsScreen(track: track))),
+            ),
+      ],
     );
   }
 
