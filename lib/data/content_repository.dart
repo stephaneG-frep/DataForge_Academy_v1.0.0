@@ -2,6 +2,7 @@ import 'package:flutter/material.dart' show IconData, Icons;
 
 import '../models/lesson_models.dart';
 import 'design_track_lessons.dart';
+import 'sgbd_extra_lessons.dart';
 import 'sgbd_track_lessons.dart';
 import 'sql_track_lessons.dart';
 
@@ -19,21 +20,21 @@ class ContentRepository {
       _track('sql', 'SQL', 'Le langage universel des bases relationnelles',
           Icons.code, 'indigo', SqlTrackLessons.all()),
       _track('sqlite', 'SQLite', 'Base embarquée, zéro serveur',
-          Icons.storage, 'cyan', SgbdTrackLessons.sqlite()),
+          Icons.storage, 'cyan', _byLevel(SgbdTrackLessons.sqlite(), SgbdExtraLessons.sqlite())),
       _track('postgres', 'PostgreSQL', 'SGBD open source avancé',
-          Icons.dns, 'blue', SgbdTrackLessons.postgres()),
+          Icons.dns, 'blue', _byLevel(SgbdTrackLessons.postgres(), SgbdExtraLessons.postgres())),
       _track('mysql', 'MySQL', 'Le SGBD du web',
-          Icons.cloud_queue, 'teal', SgbdTrackLessons.mysql()),
+          Icons.cloud_queue, 'teal', _byLevel(SgbdTrackLessons.mysql(), SgbdExtraLessons.mysql())),
       _track('mariadb', 'MariaDB', 'Le fork communautaire de MySQL',
-          Icons.lan, 'purple', SgbdTrackLessons.mariadb()),
+          Icons.lan, 'purple', _byLevel(SgbdTrackLessons.mariadb(), SgbdExtraLessons.mariadb())),
       _track('sqlserver', 'SQL Server / T-SQL', 'Le SGBD de Microsoft',
-          Icons.window, 'red', SgbdTrackLessons.sqlserver()),
+          Icons.window, 'red', _byLevel(SgbdTrackLessons.sqlserver(), SgbdExtraLessons.sqlserver())),
       _track('oracle', 'Oracle / PL-SQL', 'Le SGBD des grandes entreprises',
-          Icons.account_balance, 'brown', SgbdTrackLessons.oracle()),
+          Icons.account_balance, 'brown', _byLevel(SgbdTrackLessons.oracle(), SgbdExtraLessons.oracle())),
       _track('mongodb', 'MongoDB', 'NoSQL orienté document',
-          Icons.dataset, 'green', SgbdTrackLessons.mongodb()),
+          Icons.dataset, 'green', _byLevel(SgbdTrackLessons.mongodb(), SgbdExtraLessons.mongodb())),
       _track('redis', 'Redis', 'Base clé-valeur en mémoire',
-          Icons.bolt, 'amber', SgbdTrackLessons.redis()),
+          Icons.bolt, 'amber', _byLevel(SgbdTrackLessons.redis(), SgbdExtraLessons.redis())),
       _track('design', 'Conception & modélisation',
           'ER, clés, relations, normalisation, sauvegarde',
           Icons.account_tree, 'cyan', DesignTrackLessons.design()),
@@ -42,6 +43,18 @@ class ContentRepository {
           Icons.integration_instructions, 'blue', DesignTrackLessons.programming()),
     ];
     return t;
+  }
+
+  /// Merges two lesson lists, ordered by level. Lessons of the same level
+  /// keep their original order (base lessons first).
+  static List<Lesson> _byLevel(List<Lesson> base, List<Lesson> extra) {
+    final all = [...base, ...extra];
+    final indexed = all.asMap().entries.toList()
+      ..sort((a, b) {
+        final byLevel = a.value.levelIndex.compareTo(b.value.levelIndex);
+        return byLevel != 0 ? byLevel : a.key.compareTo(b.key);
+      });
+    return [for (final e in indexed) e.value];
   }
 
   Track _track(String id, String title, String subtitle, IconData icon,
