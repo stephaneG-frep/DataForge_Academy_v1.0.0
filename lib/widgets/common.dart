@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../services/progress_service.dart';
+import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
 
 /// A terminal-style code block with copy support and syntax tinting.
@@ -9,7 +11,11 @@ class TerminalCode extends StatelessWidget {
   final String? title;
   final String? caption;
   final bool selectable;
-  const TerminalCode(this.code, {super.key, this.title, this.caption, this.selectable = true});
+
+  /// When set, an « Essayer » button runs the code in the Console.
+  final VoidCallback? onTry;
+  const TerminalCode(this.code,
+      {super.key, this.title, this.caption, this.selectable = true, this.onTry});
 
   @override
   Widget build(BuildContext context) {
@@ -46,6 +52,17 @@ class TerminalCode extends StatelessWidget {
                           fontFamily: 'monospace'),
                     ),
                   ),
+                  if (onTry != null)
+                    TextButton.icon(
+                      onPressed: onTry,
+                      icon: const Icon(Icons.play_arrow, size: 16),
+                      label: const Text('Essayer'),
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.terminalGreen,
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                      ),
+                    ),
                   IconButton(
                     icon: const Icon(Icons.copy_rounded, size: 16, color: AppColors.terminalAmber),
                     onPressed: () => Clipboard.setData(ClipboardData(text: code)),
@@ -278,4 +295,19 @@ class InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => _InfoCard(icon, color, title,
       subtitle: subtitle, trailing: trailing, onTap: onTap);
+}
+
+/// Rebuilds [builder] whenever progress (XP, lessons, challenges…) or user
+/// settings change. Tabs stay alive in the bottom navigation, so screens that
+/// display progress must listen instead of reading it once.
+class ProgressBuilder extends StatelessWidget {
+  final WidgetBuilder builder;
+  const ProgressBuilder({super.key, required this.builder});
+
+  static final Listenable _listenable = Listenable.merge(
+      [ProgressService.instance, SettingsService.instance]);
+
+  @override
+  Widget build(BuildContext context) => ListenableBuilder(
+      listenable: _listenable, builder: (context, _) => builder(context));
 }

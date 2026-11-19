@@ -74,7 +74,7 @@ class DesignTrackLessons {
             code('sql', "-- base : boutique\nCREATE TABLE commandes (\n  id INTEGER PRIMARY KEY,\n  client_id INTEGER NOT NULL REFERENCES clients(id),\n  date_cmd TEXT NOT NULL\n);\nCREATE TABLE lignes_commande (\n  commande_id INTEGER REFERENCES commandes(id),\n  product_id INTEGER REFERENCES products(id),\n  quantite INTEGER NOT NULL CHECK (quantite > 0),\n  PRIMARY KEY (commande_id, product_id)\n);",
                 e: "Le schéma traduit en tables : la relation N-N devient la table lignes_commande."),
             code('sql', "-- base : boutique\nINSERT INTO commandes (client_id, date_cmd) VALUES (1, '2026-11-19');\nINSERT INTO lignes_commande VALUES (1, 2, 3);\nSELECT c.nom, p.name, l.quantite\nFROM lignes_commande l\nJOIN commandes o ON o.id = l.commande_id\nJOIN clients c ON c.id = o.client_id\nJOIN products p ON p.id = l.product_id;",
-                e: "Alice commande 3 souris : le modèle permet de retrouver qui a commandé quoi (instructions à exécuter une par une)."),
+                e: "Alice commande 3 souris : le modèle permet de retrouver qui a commandé quoi."),
           ],
           mistakes: [
             "Confondre entité et attribut (la ville d'un client est-elle un simple attribut ou une entité ?).",

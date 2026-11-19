@@ -86,10 +86,11 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
     });
     if (record) {
       _prog.addHistory(sql);
+      _prog.incrementQueries();
       _setLastDb();
     }
     try {
-      final r = await PlaygroundDatabase.instance.execute(db, sql);
+      final r = await PlaygroundDatabase.instance.executeScript(db, sql);
       if (mounted) {
         setState(() {
           _result = r;
@@ -409,6 +410,10 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
                   color: AppColors.terminalGreen, icon: Icons.table_chart),
               const SizedBox(width: 6),
               Pill('${r.elapsedMs} ms', color: AppColors.terminalBlue, icon: Icons.timer),
+              if (r.statementCount > 1) ...[
+                const SizedBox(width: 6),
+                Pill('${r.statementCount} instructions', color: AppColors.terminalAmber, icon: Icons.playlist_play),
+              ],
             ],
           ),
           const SizedBox(height: 10),
@@ -426,7 +431,7 @@ class _PlaygroundScreenState extends State<PlaygroundScreen> {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'Requête exécutée avec succès — ${r.affectedRows} ligne(s) affectée(s).',
+                r.summary,
                 style: const TextStyle(fontSize: 14),
               ),
             ),

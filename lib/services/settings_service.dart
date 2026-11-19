@@ -38,11 +38,13 @@ class SettingsService extends ChangeNotifier {
     _targetXp = xp;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_kTargetXp, xp);
+    notifyListeners();
   }
 
   Future<void> setPlaygroundFontSize(double size) async {
     _playgroundFontSize = size;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble(_kPlaygroundFontSize, size);
+    notifyListeners();
   }
 }

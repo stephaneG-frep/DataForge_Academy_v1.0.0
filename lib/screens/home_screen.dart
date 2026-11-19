@@ -19,7 +19,10 @@ class HomeScreen extends StatelessWidget {
   static const _levelNames = ['Débutant', 'Fondamentaux', 'Intermédiaire', 'Avancé', 'Expert', 'Engineer'];
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProgressBuilder(builder: _build);
+
+  Widget _build(BuildContext context) {
     final prog = ProgressService.instance;
     final repo = ContentRepository.instance;
     final xp = prog.xp;

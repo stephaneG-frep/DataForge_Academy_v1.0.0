@@ -122,5 +122,40 @@ void main() {
       final d = await pg.execute('employes', 'DELETE FROM employes WHERE id = 1;');
       expect(d.affectedRows, 1);
     }, timeout: const Timeout(Duration(seconds: 30)));
+
+    test('executeScript runs every statement in order', () async {
+      final pg = PlaygroundDatabase.instance;
+      final r = await pg.executeScript('boutique',
+          "-- base : boutique\nUPDATE products SET stock = 0 WHERE id <= 3;\n"
+          "DELETE FROM products WHERE id = 12;\nSELECT COUNT(*) FROM products WHERE stock = 0;");
+      expect(r.statementCount, 3);
+      expect(r.affectedRows, 4); // 3 updated + 1 deleted
+      expect(r.rows.first.first, 3);
+      expect(r.summary, isNot(contains('Aucune')));
+    }, timeout: const Timeout(Duration(seconds: 30)));
+
+    test('executeScript names the failing statement and rolls back', () async {
+      final pg = PlaygroundDatabase.instance;
+      try {
+        await pg.executeScript('boutique',
+            'BEGIN; UPDATE products SET stock = 0; SELECT * FROM inconnue; COMMIT;');
+        fail('should throw');
+      } on SqlError catch (e) {
+        expect(e.displayMessage, startsWith('Instruction 3/4'));
+        expect(e.displayMessage, contains('annulée'));
+      }
+      final r = await pg.execute('boutique', 'SELECT COUNT(*) FROM products WHERE stock = 0;');
+      expect(r.rows.first.first, 1, reason: 'the UPDATE was rolled back');
+      // No transaction left open: a new BEGIN works.
+      await pg.executeScript('boutique', 'BEGIN; COMMIT;');
+    }, timeout: const Timeout(Duration(seconds: 30)));
+
+    test('a SELECT without rows says so', () async {
+      final r = await PlaygroundDatabase.instance
+          .executeScript('boutique', 'SELECT * FROM products WHERE price < 0;');
+      expect(r.returnsRows, isTrue);
+      expect(r.isQuery, isFalse);
+      expect(r.summary, contains('Aucune ligne'));
+    }, timeout: const Timeout(Duration(seconds: 30)));
   });
 }

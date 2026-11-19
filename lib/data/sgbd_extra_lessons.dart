@@ -39,7 +39,7 @@ class SgbdExtraLessons {
             code('sql', "-- base : boutique\nSELECT json_extract('{\"nom\": \"Alice\", \"ville\": \"Paris\"}', '\$.ville') AS ville;",
                 e: "Lire un champ dans un document JSON stocké en texte."),
             code('sql', "-- base : boutique\nBEGIN IMMEDIATE;\nUPDATE products SET stock = stock - 1 WHERE id = 2;\nINSERT INTO products (name, price, category_id, stock) VALUES ('Câble USB-C', 9.99, 3, 200);\nCOMMIT;\nSELECT name, stock FROM products WHERE id = 2 OR name = 'Câble USB-C';",
-                e: "Plusieurs écritures regroupées dans une transaction : plus sûr et beaucoup plus rapide (instructions à exécuter une par une)."),
+                e: "Plusieurs écritures regroupées dans une transaction : plus sûr et beaucoup plus rapide."),
             code('sql', "-- base : boutique\nCREATE INDEX idx_products_cat ON products(category_id);\nEXPLAIN QUERY PLAN SELECT name FROM products WHERE category_id = 2;",
                 e: "Le plan indique SEARCH … USING INDEX idx_products_cat."),
           ],

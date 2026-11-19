@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/common.dart';
+
 import '../services/progress_service.dart';
 import '../services/settings_service.dart';
 import '../theme/app_colors.dart';
@@ -13,7 +15,10 @@ class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProgressBuilder(builder: _build);
+
+  Widget _build(BuildContext context) {
     return Scaffold(
       appBar: const AppHeader(title: 'Références & paramètres', subtitle: 'Toutes les aides et options'),
       body: ListView(
@@ -43,6 +48,8 @@ class SettingsScreen extends StatelessWidget {
           _themeTile(context),
           _targetTile(context),
           _fontTile(context),
+          const Divider(height: 28),
+          _resetTile(context),
         ],
       ),
     );
@@ -142,6 +149,46 @@ class SettingsScreen extends StatelessWidget {
             ),
           );
           if (choice != null) await SettingsService.instance.setPlaygroundFontSize(choice);
+        },
+      ),
+    );
+  }
+
+  Widget _resetTile(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.restart_alt, color: AppColors.terminalRed),
+        title: const Text('Réinitialiser ma progression'),
+        subtitle: const Text('Repartir de zéro : XP, leçons, quiz, défis et projets'),
+        onTap: () async {
+          final ok = await showDialog<bool>(
+            context: context,
+            builder: (dialogContext) => AlertDialog(
+              title: const Text('Réinitialiser la progression ?'),
+              content: Text(
+                  'Ton XP (${ProgressService.instance.xp}), tes leçons terminées, tes quiz, '
+                  'tes défis et projets réussis ainsi que ton compteur de requêtes seront '
+                  'effacés. Cette action est définitive.\n\n'
+                  'Tes notes, tes favoris et l\'historique de la Console sont conservés.'),
+              actions: [
+                TextButton(
+                    onPressed: () => Navigator.pop(dialogContext, false),
+                    child: const Text('Annuler')),
+                FilledButton(
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.terminalRed),
+                  onPressed: () => Navigator.pop(dialogContext, true),
+                  child: const Text('Tout effacer'),
+                ),
+              ],
+            ),
+          );
+          if (ok != true) return;
+          await ProgressService.instance.resetProgress();
+          if (!context.mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+            content: Text('Progression réinitialisée'),
+            behavior: SnackBarBehavior.floating,
+          ));
         },
       ),
     );

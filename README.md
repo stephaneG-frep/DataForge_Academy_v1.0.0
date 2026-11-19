@@ -43,13 +43,21 @@ test/                        tests du moteur SQL, des utilitaires et des écrans
 ### Moteur SQL (`playground_database.dart`)
 
 - Chaque base d'entraînement est une base SQLite **en mémoire, indépendante** (`singleInstance: false`). Elle est créée à la première ouverture et revient à son état d'origine via « Réinitialiser la base » ou au redémarrage de l'app.
-- `execute()` exécute **une seule instruction** à la fois : les commentaires et le `;` final sont acceptés, plusieurs instructions sont refusées avec un message clair. Le nombre de lignes affectées est calculé avec `total_changes()`.
+- `executeScript()`, utilisé par la Console, exécute une ou plusieurs instructions dans l'ordre (commentaires et `;` acceptés). Il renvoie le résultat de la dernière instruction et le total des lignes affectées, calculé avec `total_changes()`. En cas d'erreur, le message indique l'instruction fautive, et une transaction ouverte par le script est annulée. `execute()` n'accepte qu'une seule instruction.
 - `executeReadOnly()` sert aux défis. Seuls `SELECT`/`WITH`/`VALUES` sont acceptés, la requête s'exécute avec `PRAGMA query_only = ON` dans une transaction toujours annulée, et la base ne peut donc pas être modifiée.
 - Sur Android, le moteur utilise `sqflite`. Dans les tests et sur desktop, il utilise `sqflite_common_ffi`.
 
 ### Correction des défis
 
 La requête de l'utilisateur et la solution sont exécutées en lecture seule, puis leurs lignes sont comparées. Pour les défis qui imposent un tri (`orderByColumn` dans `challenge_data.dart`), l'app vérifie aussi l'ordre sur cette colonne. Les ex æquo peuvent apparaître dans n'importe quel ordre.
+
+### Lien leçons ↔ Console
+
+Les exemples exécutables commencent par `-- base : <id>` et les exercices pratiques se terminent par `(base <id>)`. L'écran de leçon affiche alors un bouton **Essayer**, qui ouvre la Console sur la bonne base avec la requête pré-remplie (voir `utils/console_link.dart`). `test/lesson_content_test.dart` exécute tous ces exemples et corrigés.
+
+### Progression
+
+`ProgressService` est un `ChangeNotifier`. Les écrans qui affichent la progression l'écoutent via `ProgressBuilder`, ce qui les met à jour immédiatement, même quand l'onglet reste ouvert. **Réglages → Réinitialiser ma progression** efface l'XP, les leçons, les quiz, les défis, les projets et le compteur de requêtes, mais conserve les notes, les favoris et l'historique.
 
 ### XP
 

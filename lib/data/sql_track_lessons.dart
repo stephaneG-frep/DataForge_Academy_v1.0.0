@@ -466,7 +466,7 @@ class SqlTrackLessons {
             "ACID résume les garanties : Atomicité (tout ou rien), Cohérence (les contraintes restent respectées), Isolation (les transactions simultanées ne se gênent pas), Durabilité (une fois validées, les données survivent à une panne).",
             "Sans BEGIN, la plupart des SGBD sont en mode autocommit : chaque instruction est une petite transaction validée immédiatement.",
             "SAVEPOINT nom pose un point de retour à l'intérieur d'une transaction : ROLLBACK TO nom annule seulement ce qui suit ce point.",
-            "L'isolation a plusieurs niveaux (READ COMMITTED, REPEATABLE READ, SERIALIZABLE). Plus elle est stricte, plus elle évite les anomalies (lectures sales, lectures non répétables), mais plus elle peut ralentir. Dans la Console, exécute les instructions des exemples une par une.",
+            "L'isolation a plusieurs niveaux (READ COMMITTED, REPEATABLE READ, SERIALIZABLE). Plus elle est stricte, plus elle évite les anomalies (lectures sales, lectures non répétables), mais plus elle peut ralentir.",
           ],
           codeBlocks: [
             code('sql', "-- base : boutique\nCREATE TABLE comptes (\n  id INTEGER PRIMARY KEY,\n  titulaire TEXT,\n  solde REAL CHECK (solde >= 0)\n);\nINSERT INTO comptes (titulaire, solde) VALUES ('Alice', 500), ('Bob', 200);",
@@ -528,7 +528,7 @@ class SqlTrackLessons {
             code('sql', "-- base : boutique\nEXPLAIN QUERY PLAN SELECT * FROM products WHERE name LIKE '%souris%';",
                 e: "Ici, SCAN : aucun index ne peut servir avec un % au début."),
             code('sql', "-- base : employes\nCREATE INDEX idx_emp_dept_sal ON employes(departement_id, salaire);\nEXPLAIN QUERY PLAN\nSELECT nom FROM employes WHERE departement_id = 2 AND salaire > 40000;",
-                e: "Un index composite utilisé pour les deux conditions (instructions à exécuter une par une)."),
+                e: "Un index composite utilisé pour les deux conditions."),
           ],
           commonMistakes: [
             "Indexer toutes les colonnes : inutile et coûteux à chaque écriture.",

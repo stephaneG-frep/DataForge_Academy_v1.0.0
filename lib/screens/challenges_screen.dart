@@ -14,7 +14,10 @@ class ChallengesScreen extends StatelessWidget {
   const ChallengesScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProgressBuilder(builder: _build);
+
+  Widget _build(BuildContext context) {
     final prog = ProgressService.instance;
     final challenges = ChallengeData.all;
     final resolved = prog.resolvedChallenges;

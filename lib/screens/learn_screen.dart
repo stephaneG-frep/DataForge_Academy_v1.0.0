@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../widgets/common.dart';
+
 import '../data/content_repository.dart';
 import '../data/levels_data.dart';
 import '../models/lesson_models.dart';
@@ -43,7 +45,10 @@ class LearnScreen extends StatelessWidget {
   const LearnScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProgressBuilder(builder: _build);
+
+  Widget _build(BuildContext context) {
     final repo = ContentRepository.instance;
     final prog = ProgressService.instance;
 
@@ -160,7 +165,10 @@ class TrackLessonsScreen extends StatelessWidget {
   const TrackLessonsScreen({super.key, required this.track});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProgressBuilder(builder: _build);
+
+  Widget _build(BuildContext context) {
     final prog = ProgressService.instance;
     final color = trackColor(track);
 

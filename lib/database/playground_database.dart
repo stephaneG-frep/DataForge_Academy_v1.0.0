@@ -88,6 +88,62 @@ class PlaygroundDatabase {
   Future<QueryResult> execute(String dbId, String sql) async {
     final stmt = singleStatement(sql);
     final db = await openDatabase(dbId);
+    return _executeOne(db, stmt);
+  }
+
+  /// Execute a script of one or more statements, in order (used by the
+  /// Console, so lesson examples can be run as written).
+  ///
+  /// Returns the result of the last statement, with [QueryResult.statementCount]
+  /// set and [QueryResult.affectedRows] summed over all statements. On error,
+  /// the message says which statement failed, and a transaction opened by the
+  /// script and left unfinished is rolled back.
+  Future<QueryResult> executeScript(String dbId, String sql) async {
+    final statements = splitStatements(sql);
+    if (statements.isEmpty) singleStatement(sql); // throws the "empty" error
+    final db = await openDatabase(dbId);
+    final total = statements.length;
+    final stopwatch = Stopwatch()..start();
+    var affected = 0;
+    var inTransaction = false;
+    QueryResult? last;
+    for (var i = 0; i < total; i++) {
+      final stmt = statements[i];
+      try {
+        last = await _executeOne(db, stmt);
+      } on SqlError catch (e) {
+        var msg = e.displayMessage;
+        if (inTransaction) {
+          try {
+            await db.execute('ROLLBACK');
+            msg += ' La transaction ouverte par le script a été annulée.';
+          } catch (_) {}
+        }
+        throw SqlError(e.message,
+            displayMessage: total > 1 ? 'Instruction ${i + 1}/$total : $msg' : msg);
+      }
+      affected += last.affectedRows;
+      final kw = _firstKeyword(stmt);
+      final lower = stmt.toLowerCase();
+      if (kw == 'begin' || kw == 'start') inTransaction = true;
+      if (kw == 'commit' || kw == 'end' ||
+          (kw == 'rollback' && !RegExp(r'^\s*rollback\s+to\b').hasMatch(lower))) {
+        inTransaction = false;
+      }
+    }
+    stopwatch.stop();
+    return QueryResult(
+      columns: last!.columns,
+      rows: last.rows,
+      affectedRows: affected,
+      elapsedMs: stopwatch.elapsedMilliseconds.toDouble(),
+      executedSql: sql.trim(),
+      returnsRows: last.returnsRows,
+      statementCount: total,
+    );
+  }
+
+  Future<QueryResult> _executeOne(Database db, String stmt) async {
     final stopwatch = Stopwatch()..start();
     try {
       if (_returnsRows(stmt)) {
@@ -174,6 +230,7 @@ class PlaygroundDatabase {
       affectedRows: 0,
       elapsedMs: stopwatch.elapsedMilliseconds.toDouble(),
       executedSql: stmt,
+      returnsRows: true,
     );
   }
 

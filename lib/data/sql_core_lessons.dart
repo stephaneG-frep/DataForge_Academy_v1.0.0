@@ -52,7 +52,7 @@ class SqlCoreLessons {
                 e: "Applique 10 % de remise sur tous les jeux vidéo (catégorie 4)."),
             code(
                 "-- base : boutique\nSELECT * FROM products WHERE stock = 0;\nDELETE FROM products WHERE stock = 0;",
-                e: "On vérifie d'abord avec SELECT, puis on supprime les produits en rupture de stock. Dans la Console, exécute les deux instructions une par une."),
+                e: "On vérifie d'abord avec SELECT, puis on supprime les produits en rupture de stock."),
           ],
           commonMistakes: [
             "Oublier le WHERE dans un UPDATE ou un DELETE : toute la table est modifiée.",
@@ -212,7 +212,7 @@ class SqlCoreLessons {
             code("-- base : boutique\nINSERT INTO avis (product_id, note, commentaire)\nVALUES (1, 5, 'Excellent clavier');\nSELECT * FROM avis;",
                 e: "date_avis prend la date du jour grâce à DEFAULT. Essaie ensuite avec une note de 6 : la contrainte CHECK refuse l'insertion."),
             code("-- base : boutique\nALTER TABLE clients ADD COLUMN telephone TEXT;\nSELECT * FROM clients;",
-                e: "La nouvelle colonne vaut NULL pour les clients existants (instructions à exécuter une par une)."),
+                e: "La nouvelle colonne vaut NULL pour les clients existants."),
             code("-- base : boutique\nDROP TABLE IF EXISTS avis;",
                 e: "Supprime la table si elle existe, sans erreur sinon."),
           ],
@@ -421,9 +421,9 @@ class SqlCoreLessons {
           ],
           codeBlocks: [
             code("-- base : employes\nCREATE VIEW v_annuaire AS\nSELECT e.prenom, e.nom, d.nom AS departement, d.ville\nFROM employes e\nJOIN departements d ON e.departement_id = d.id;\nSELECT * FROM v_annuaire WHERE ville = 'Paris';",
-                e: "Un annuaire sans les salaires, interrogé comme une table. Exécute d'abord le CREATE VIEW, puis le SELECT."),
+                e: "Un annuaire sans les salaires, interrogé comme une table."),
             code("-- base : boutique\nCREATE VIEW v_stock_faible AS\nSELECT name, stock FROM products WHERE stock < 20;\nSELECT * FROM v_stock_faible ORDER BY stock;",
-                e: "Une vue métier : les produits à réapprovisionner (CREATE, puis SELECT)."),
+                e: "Une vue métier : les produits à réapprovisionner."),
             code("-- base : boutique\nDROP VIEW IF EXISTS v_stock_faible;",
                 e: "Supprimer la vue ne touche pas aux données de products."),
           ],

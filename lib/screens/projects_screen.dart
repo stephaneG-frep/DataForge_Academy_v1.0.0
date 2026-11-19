@@ -30,7 +30,10 @@ class ProjectsScreen extends StatelessWidget {
   const ProjectsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProgressBuilder(builder: _build);
+
+  Widget _build(BuildContext context) {
     final prog = ProgressService.instance;
     return Scaffold(
       appBar: const AppHeader(title: 'Projets', subtitle: 'Des mises en pratique complètes'),

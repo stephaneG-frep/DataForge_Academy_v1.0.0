@@ -10,6 +10,7 @@ import 'package:dataforge_academy/models/lesson_models.dart';
 import 'package:dataforge_academy/screens/challenges_screen.dart';
 import 'package:dataforge_academy/screens/lesson_view_screen.dart';
 import 'package:dataforge_academy/screens/main_shell.dart';
+import 'package:dataforge_academy/screens/settings_screen.dart';
 import 'package:dataforge_academy/services/progress_service.dart';
 
 final _lesson = Lesson(
@@ -78,6 +79,74 @@ void main() {
     });
   });
 
+  group('ProgressService notifications et réinitialisation', () {
+    test('chaque écriture prévient les écrans', () async {
+      final p = ProgressService.instance;
+      var calls = 0;
+      void listener() => calls++;
+      p.addListener(listener);
+      await p.addXp(10);
+      await p.completeLesson('x');
+      await p.resolveChallenge('ch_01');
+      p.removeListener(listener);
+      expect(calls, 3);
+    });
+
+    test('resetProgress efface la progression mais garde notes, favoris et historique', () async {
+      final p = ProgressService.instance;
+      await p.addXp(120);
+      await p.completeLesson('sql_intro');
+      await p.resolveChallenge('ch_01');
+      await p.answerQuiz('sql_intro#q0', correct: true);
+      await p.incrementQueries();
+      await p.saveNote('n1', 'Titre', 'Corps');
+      await p.toggleFavorite('sql_select');
+      await p.addHistory('SELECT 1;');
+
+      await p.resetProgress();
+
+      expect(p.xp, 0);
+      expect(p.completedLessons, isEmpty);
+      expect(p.resolvedChallenges, isEmpty);
+      expect(p.solvedQuizzes, isEmpty);
+      expect(p.attemptedQuizzes, isEmpty);
+      expect(p.queriesCount, 0);
+      expect(p.lastLesson, isNull);
+      expect(p.notes, hasLength(1));
+      expect(p.favorites, ['sql_select']);
+      expect(p.history, hasLength(1));
+    });
+  });
+
+  testWidgets('la liste des défis se met à jour sans quitter l\'écran', (tester) async {
+    await tester.pumpWidget(const MaterialApp(home: ChallengesScreen()));
+    expect(find.text('0/${ChallengeData.all.length}'), findsOneWidget);
+    await tester.runAsync(() => ProgressService.instance.resolveChallenge('ch_01'));
+    await tester.pump();
+    expect(find.text('1/${ChallengeData.all.length}'), findsOneWidget);
+  });
+
+  testWidgets('Réglages : réinitialiser la progression après confirmation', (tester) async {
+    await tester.runAsync(() => ProgressService.instance.addXp(80));
+    await tester.pumpWidget(const MaterialApp(home: SettingsScreen()));
+    await tester.scrollUntilVisible(find.text('Réinitialiser ma progression'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await _tapVisible(tester, find.text('Réinitialiser ma progression'));
+    expect(find.textContaining('Tes notes, tes favoris'), findsOneWidget);
+    await tester.tap(find.text('Annuler'));
+    await tester.pumpAndSettle();
+    expect(ProgressService.instance.xp, 80);
+
+    await tester.scrollUntilVisible(find.text('Réinitialiser ma progression'), 200,
+        scrollable: find.byType(Scrollable).first);
+    await _tapVisible(tester, find.text('Réinitialiser ma progression'));
+    await tester.tap(find.text('Tout effacer'));
+    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 50)));
+    await tester.pumpAndSettle();
+    expect(ProgressService.instance.xp, 0);
+    expect(find.text('Progression réinitialisée'), findsOneWidget);
+  });
+
   group('LessonViewScreen', () {
     Future<void> pumpLesson(WidgetTester tester) => tester.pumpWidget(
         MaterialApp(home: LessonViewScreen(track: _track, lesson: _lesson)));
@@ -99,6 +168,24 @@ void main() {
       expect(ProgressService.instance.xp, 0);
       expect(find.byIcon(Icons.cancel), findsOneWidget,
           reason: 'the wrong choice stays selected');
+    });
+
+    testWidgets('« Essayer » ouvre la Console sur la bonne base', (tester) async {
+      final lesson = Lesson(
+        id: 'try_lesson', trackId: 'sql', levelIndex: 0, title: 'Essai',
+        objective: 'o', content: const ['c'],
+        codeBlocks: [CodeBlock('sql', '-- base : films\nSELECT titre FROM films;')],
+        commonMistakes: const [],
+        exercises: [ExerciseItem('Affiche les films. (base films)', 'SELECT * FROM films;', 'e')],
+        quiz: const [],
+      );
+      await tester.pumpWidget(MaterialApp(home: LessonViewScreen(track: _track, lesson: lesson)));
+      expect(find.text('Affiche les films.'), findsOneWidget, reason: 'tag (base …) masqué');
+      expect(find.text('Base : Films'), findsOneWidget);
+      await _tapVisible(tester, find.widgetWithText(TextButton, 'Essayer').first);
+      expect(find.text('Console SQL'), findsOneWidget);
+      expect(find.text('Base : Films'), findsOneWidget);
+      expect(find.textContaining('SELECT titre FROM films;'), findsOneWidget);
     });
 
     testWidgets('correct first answer grants 5 XP', (tester) async {

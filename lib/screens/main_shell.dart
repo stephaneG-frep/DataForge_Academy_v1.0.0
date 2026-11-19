@@ -59,7 +59,7 @@ class _MainShellState extends State<MainShell> {
                   .toList(),
             ),
             const VerticalDivider(width: 1),
-            Expanded(child: _screens[_index]),
+            Expanded(child: IndexedStack(index: _index, children: _screens)),
           ],
         ),
       );

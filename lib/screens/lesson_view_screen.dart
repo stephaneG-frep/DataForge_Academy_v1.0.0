@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../data/levels_data.dart';
+import '../database/practice_data.dart';
 import '../models/lesson_models.dart';
 import '../services/progress_service.dart';
 import '../theme/app_colors.dart';
+import '../utils/console_link.dart';
 import '../widgets/common.dart';
 
 class LessonViewScreen extends StatefulWidget {
@@ -94,7 +96,12 @@ class _LessonViewScreenState extends State<LessonViewScreen> {
             const SectionHeading('Syntaxe & exemples', icon: Icons.terminal),
             for (final cb in lesson.codeBlocks)
               TerminalCode(cb.code,
-                  title: cb.language, caption: cb.explanation),
+                  title: cb.language,
+                  caption: cb.explanation,
+                  onTry: switch (ConsoleLink.baseOfCode(cb.code)) {
+                    final db? => () => ConsoleLink.open(context, db, cb.code),
+                    null => null,
+                  }),
           ],
 
           // MISTAKES
@@ -175,6 +182,7 @@ class _LessonViewScreenState extends State<LessonViewScreen> {
   }
 
   Widget _exerciseCard(BuildContext context, int i, ExerciseItem ex) {
+    final db = ConsoleLink.baseOfExercise(ex.question);
     final revealed = _revealedExercises.contains(ex.question);
     return Card(
       margin: const EdgeInsets.only(bottom: 10),
@@ -200,7 +208,14 @@ class _LessonViewScreenState extends State<LessonViewScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(ex.question, style: const TextStyle(fontSize: 14, height: 1.4)),
+            Text(ConsoleLink.exerciseText(ex.question),
+                style: const TextStyle(fontSize: 14, height: 1.4)),
+            if (db != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text('Base : ${PracticeData.meta(db)['name']}',
+                    style: const TextStyle(fontSize: 12, color: AppColors.terminalBlue)),
+              ),
             const SizedBox(height: 8),
             if (revealed) ...[
               Container(
@@ -223,17 +238,36 @@ class _LessonViewScreenState extends State<LessonViewScreen> {
                             fontFamily: 'monospace', fontSize: 13)),
                     const SizedBox(height: 4),
                     Text(ex.explanation, style: const TextStyle(fontSize: 12, height: 1.4)),
+                    if (db != null)
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton.icon(
+                          icon: const Icon(Icons.play_arrow),
+                          label: const Text('Exécuter la correction'),
+                          onPressed: () => ConsoleLink.open(context, db, ex.answer),
+                        ),
+                      ),
                   ],
                 ),
               ),
             ] else
-              Align(
-                alignment: Alignment.centerRight,
-                child: TextButton.icon(
-                  icon: const Icon(Icons.visibility),
-                  label: const Text('Voir la correction'),
-                  onPressed: () => setState(() => _revealedExercises.add(ex.question)),
-                ),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 4,
+                children: [
+                  if (db != null)
+                    TextButton.icon(
+                      icon: const Icon(Icons.terminal),
+                      label: const Text('Essayer'),
+                      onPressed: () => ConsoleLink.open(context, db,
+                          '-- base : $db\n-- ${ConsoleLink.exerciseText(ex.question)}\n\n'),
+                    ),
+                  TextButton.icon(
+                    icon: const Icon(Icons.visibility),
+                    label: const Text('Voir la correction'),
+                    onPressed: () => setState(() => _revealedExercises.add(ex.question)),
+                  ),
+                ],
               ),
           ],
         ),

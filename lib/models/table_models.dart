@@ -60,19 +60,38 @@ class QueryResult {
   final double elapsedMs;
   final String executedSql;
 
+  /// True when the (last) statement was a query (SELECT, WITH, PRAGMA…),
+  /// even if it returned no row.
+  final bool returnsRows;
+
+  /// Number of statements executed (> 1 for a script run from the Console).
+  final int statementCount;
+
   QueryResult({
     required this.columns,
     required this.rows,
     required this.affectedRows,
     required this.elapsedMs,
     required this.executedSql,
+    this.returnsRows = false,
+    this.statementCount = 1,
   });
 
   int get rowCount => rows.length;
 
+  /// Has a result table to display.
   bool get isQuery => columns.isNotEmpty;
 
   bool get isEmpty => rows.isEmpty && columns.isEmpty && affectedRows == 0;
+
+  /// Text shown when there is no table to display.
+  String get summary {
+    final prefix = statementCount > 1 ? '$statementCount instructions exécutées. ' : '';
+    if (returnsRows && rows.isEmpty) {
+      return '${prefix}Aucune ligne ne correspond à la requête.';
+    }
+    return '${prefix}Requête exécutée avec succès — $affectedRows ligne(s) affectée(s).';
+  }
 }
 
 class SqlError {

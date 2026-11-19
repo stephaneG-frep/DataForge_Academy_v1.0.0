@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../database/playground_database.dart';
+import '../database/practice_data.dart';
 import '../models/table_models.dart';
 import '../services/progress_service.dart';
 import '../theme/app_colors.dart';
@@ -37,7 +38,7 @@ class _PlaygroundEditorScreenState extends State<PlaygroundEditorScreen> {
     ProgressService.instance.addHistory(_sql.text);
     ProgressService.instance.incrementQueries();
     try {
-      final r = await PlaygroundDatabase.instance.execute(widget.dbId, _sql.text);
+      final r = await PlaygroundDatabase.instance.executeScript(widget.dbId, _sql.text);
       if (mounted) {
         setState(() {
           _result = r;
@@ -58,11 +59,18 @@ class _PlaygroundEditorScreenState extends State<PlaygroundEditorScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SQL Terminal', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Console SQL', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
+            Text('Base : ${PracticeData.meta(widget.dbId)['name']}',
+                style: const TextStyle(fontSize: 12)),
+          ],
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.info_outline),
-            tooltip: 'Réinitialiser',
+            icon: const Icon(Icons.layers_clear),
+            tooltip: 'Effacer le résultat',
             onPressed: () => setState(() {
               _result = null;
               _error = null;
@@ -175,7 +183,7 @@ class _PlaygroundEditorScreenState extends State<PlaygroundEditorScreen> {
     final r = _result!;
     final dark = Theme.of(context).brightness == Brightness.dark;
     if (r.isQuery && r.columns.isNotEmpty) {
-      return Container(
+      final table = Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(color: dark ? AppColors.darkBorder : AppColors.lightBorder),
@@ -203,12 +211,21 @@ class _PlaygroundEditorScreenState extends State<PlaygroundEditorScreen> {
           ),
         ),
       );
+      if (r.statementCount == 1) return table;
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('${r.statementCount} instructions exécutées — résultat de la dernière :',
+              style: const TextStyle(fontSize: 13)),
+          const SizedBox(height: 8),
+          table,
+        ],
+      );
     }
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Text('Requête exécutée — ${r.affectedRows} ligne(s) affectée(s).',
-            style: const TextStyle(fontSize: 14)),
+        child: Text(r.summary, style: const TextStyle(fontSize: 14)),
       ),
     );
   }

@@ -13,7 +13,10 @@ class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      ProgressBuilder(builder: _build);
+
+  Widget _build(BuildContext context) {
     final prog = ProgressService.instance;
     final xp = prog.xp;
     final maxXp = SettingsService.instance.targetXp;
