@@ -6,7 +6,7 @@ import '../database/playground_database.dart';
 import '../models/table_models.dart';
 import '../services/progress_service.dart';
 import '../theme/app_colors.dart';
-import '../utils/sql_util.dart';
+import '../utils/challenge_checker.dart';
 import '../widgets/common.dart';
 import 'main_shell.dart';
 
@@ -265,21 +265,9 @@ class _ChallengeViewScreenState extends State<ChallengeViewScreen> {
       final user = await engine.executeReadOnly(c.databaseId, _sql.text);
       final sol = await engine.executeReadOnly(c.databaseId, c.solution);
 
-      final userRows = user.rows.map(SqlUtil.rowKeys).toList();
-      final solRows = sol.rows.map(SqlUtil.rowKeys).toList();
-      final sameRows = SqlUtil.datasetsEqual(solRows, userRows);
-
-      var wrongOrder = false;
-      final orderCol = c.orderByColumn;
-      if (sameRows && orderCol != null) {
-        final idx = user.columns.indexWhere(
-            (col) => col.name.toLowerCase() == orderCol.toLowerCase());
-        wrongOrder = idx >= 0
-            ? !SqlUtil.isSortedOn(user.rows, idx,
-                descending: c.orderDescending)
-            : !SqlUtil.datasetsEqualOrdered(solRows, userRows);
-      }
-      final match = sameRows && !wrongOrder;
+      final verdict = ChallengeChecker.check(c, user, sol);
+      final wrongOrder = verdict == CheckVerdict.wrongOrder;
+      final match = verdict == CheckVerdict.passed;
 
       final outcome = _CheckOutcome(
         passed: match,
